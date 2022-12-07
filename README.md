@@ -43,3 +43,8 @@ Shoot me an e-mail at throwieaway1142@gmail.com with any feedback or questions, 
 - Allow further data manipulation
 
 - Optimise memory usage for bigger datasets
+
+
+## Download executable
+
+[You can download the executables here](https://github.com/Jan-bog/HotelProphet/releases/)
