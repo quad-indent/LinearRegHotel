@@ -1,0 +1,15 @@
+|Do NOT include Rating here
+|You can use the | symbol to add comments in separate lines - not after declaring variables
+|Do NOT include empty lines
+|Write label names that you would like to train the machine based on
+|Write the label names EXACTLY as they are in Labels.txt, including types and dropdown values
+|DO NOT include labels to train that you have no way of knowing while the guest is still there, i.e. if the guest has checked out late
+|The aforementioned label is useful in determining possible factors that might be offered to the guest to improve review score
+Stayed nights contint
+Parking complaint? check
+Room complaint? check
+Rooms booked contint
+Check-in day date
+Checkin early check
+BB plan check
+Bought parking? check

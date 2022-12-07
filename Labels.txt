@@ -1,0 +1,38 @@
+|Use the | symbol to comment. You can make comments in separate lines - not after declaring variables
+|You can change the order, names, and types of values EXCEPT: DO NOT UNDER ANY CIRCUMSTANCES CHANGE ORDER OF RATING. It has to be the first one in the list
+|You can include ASCII characters except "" and '' for now in variable names
+|
+|Allowed types of values are:
+|check - produces a checkbox: ✔ for YES, empty for NO
+|contint - continous number, i.e. something that can freely range from -infinity to infinity, with any value in-between. For example prices, nights the guest is staying
+|contint addendum: if you want to take some sort of %, like hotel occupancy during that guest's stay, use contint
+|catint - categorical value, so something within a certain range. For example allocated room number. Warning: the bigger the pool size, the more data will be required for it to become accurate
+|catint addendum: for now, it has the same functionality as contint
+|date - translates into day of the week (for now). Allows you to pick date form a pop-up calendar (except currently where you have to manually enter dd/mm/yyyy. Sorry)
+|dropdown - offers a selection of pre-entered values, for example for the rating
+|dropdown addendum I: if using dropdown, between the variable name and the variable type, inser dash-separated (-) values for the user to pick from
+|dropdown addendum II: for example, for a rating, you could declare "Rating 1-2-3-4-5-6-7-8-9-10 dropdown" without the quotation marks (""). For now, these values must be numbers
+Max rows: 7
+Max columns: 13
+|Max rows determines how many rows display per page
+|Max columns determine how many columns fit in a single line
+|You can remove these or edit the values, but DO NOT change the syntax of "Max rows: " and "Max columns: "
+|If you change the values to non-numeric, bad things will happen, so don't
+Rating 1-2-3-4-5-6-7-8-9-10 dropdown
+Room complaint? check
+Parking complaint? check
+Rooms booked contint
+Total paid contint
+Prepaid? check
+Paid on arrival day? check
+Stayed nights contint
+BB plan check
+Bought extra breakfast check
+Bought parking check
+Final room # catint
+Got room upgrade? check
+Had room transfer? check
+Got any comp service? check
+Checkin early? check
+Checkout late check
+Check-in day date
