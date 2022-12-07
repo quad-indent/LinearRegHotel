@@ -5,6 +5,7 @@ from tkinter.filedialog import askopenfilename
 import os
 import sys
 import numpy as np
+import pandas as pd
 import statistics
 import re
 from datetime import datetime
@@ -114,6 +115,7 @@ def getfile(*args):
 def predictrating(*args):
     global datalists
     global dynamic_vars
+
     try:
         params = []
         paramsnames = []
@@ -130,9 +132,9 @@ def predictrating(*args):
         reviewz = []
 
         if re.search('ReviewData.*.csv', filenamer):
-            correlations = getModel(filenamer, [i for i in paramsnames])[1]
+            correlations = getModel(filenamer, paramsnames)[1]
             for i in range(0, 20):
-                tempmodel, correlations = getModel(filenamer, paramsnames)
+                tempmodel, _ = getModel(filenamer, paramsnames)
                 temprev = tempmodel.predict(data)
                 if temprev > 10:
                     reviewz.append(10)
@@ -142,22 +144,25 @@ def predictrating(*args):
                     reviewz.append(temprev[0])
             #outputText.set(f"{round(min(reviewz), 1)} - {round(max(reviewz), 1)}; Mean guess: {round((sum(reviewz) / len(reviewz)), 1)}, Median guess: {round(statistics.median(reviewz), 1)}")
             outputText.set(f"{np.round(min(reviewz), decimals=1)} - {np.round(max(reviewz), 1)}; Mean guess: {np.round((sum(reviewz) / len(reviewz)), 1)}, Median guess: {np.round(statistics.median(reviewz), 1)}")
-            mini = correlations.iloc[1:4]
+            mini:pd.Series = correlations.iloc[1:4]
+            mini = mini.append(correlations.iloc[-3:])
             advisor = ""
-            """
-            for i in range(0, 3):
-                if (mini.index[i] == "BB" or mini.index[i] == "Bought_breakfast") and bb == 0:
-                    advisor += "There appears to be a correlation between purchase of breakfast and rating.\nConsider offering complimentary breakfast to improve chances of higher reivew.\n\n"
-                elif mini.index[i] == "Chkout_late":
-                    advisor += "There appears to be a correlation between late checkout and rating.\nConsider offering complimentary late checkout to improve chances of higher reivew.\n\n"
-                elif mini.index[i] == "Upaded":
-                    advisor += "There appears to be a correlation between guests who had their rooms upgraded and rating.\nConsider upgrading rooms to improve chances of higher reivew.\n\n"
-                elif mini.index[i] == "Complaint_room" and roomcomplaint == 1:
-                    advisor += "There appears to be a correlation between complaints about rooms and rating.\nConsider improving room quality or relocating the guest to improve chances of higher future reivews.\n\n"
-                elif mini.index[i] == "Complaint_parking_av" and parkingcomplaint == 1:
-                    advisor += "There appears to be a correlation between complaints about parking availability and rating.\nConsider improving parking availability to improve chances of higher future reivews.\n\n"
-                #advisor += f"Positive correlation with {mini.index[i]} ({mini.iloc[i]})\n"
-                """
+            #TODO: Let user specify parameters to ignore when generating advice
+            #print(mini)
+            for label, value in mini.items():
+                value = round(value, 2)
+                temper = label.replace("_", " ")
+                if value > 0.5:
+                    advisor += f"There appears to be a noticeable positive correlation ({value}) between \"{temper}\" and rating.\n\n"
+                elif value > 0:
+                    advisor += f"There appears to be a minor positive correlation ({value}) between \"{temper}\" and rating.\n\n"
+                elif value < -0.5:
+                    advisor += f"There appears to be a noticeable negative correlation ({value}) between \"{temper}\" and rating.\n\n"
+                elif value < 0:
+                    advisor += f"There appears to be a minor negative correlation ({value}) between \"{temper}\" and rating.\n\n"
+            advisor += "To improve chances of higher score, consider the parameters that have a positive correlation.\n" +\
+            "Try to offer these services, or more of them, if you can.\nConsider the parameters with a negative correlation as well: try to minimise the chances of the stated " +\
+                "parameters being experienced by the client as that is likely to lower the score.\n"
             advisorText.set(advisor)
         else:
             outputText.set("No prediction made. Please select a valid ReviewData file by clicking \"Select data to train\"")
