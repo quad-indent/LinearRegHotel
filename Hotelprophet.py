@@ -1,7 +1,4 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import os
@@ -35,7 +32,7 @@ def getModel(file_name, parameters):
     print(regressor.score(X_train, y_train))
     print(regressor.score(X_test, y_test))
 
-    return regressor, reviews.corrwith(reviews.iloc[:, 0]).abs().sort_values(ascending=False)
+    return regressor, reviews.corrwith(reviews.iloc[:, 0]).sort_values(ascending=False)
 
 def main():
     getModel('E:/PythonStuff/HotelProphet/ReviewData.csv')
