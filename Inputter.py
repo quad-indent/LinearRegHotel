@@ -10,8 +10,8 @@ import re
 #TODO:
 #Allow user to edit parameters - done
 #Allow user to edit existing data - done
-#Allow user to delete existing data
-#Fix saving
+#Allow user to delete existing data - done
+#Fix saving - done?
 #Make buttons and fields dynamic depending on the number of parameters - done!
 
 #TODO: Pretty sure that if more or less parameters are specified in Labels.txt than .csv, upon loading, it will shit itself
@@ -127,7 +127,7 @@ class widget:
 
         widgetindexref = getwidgetindex(dynamic_UIelems, self.getWidget())
         widgetref = dynamic_UIelems[widgetindexref]
-        dataindex = pageref * rowstodisplay + widgetindexref // len(labelz)
+        dataindex = (pageref - 1) * rowstodisplay + widgetindexref // len(labelz)
 
         modguestdata[dataindex][widgetref.getParamID()] = widgetref.getVarVal()
 
@@ -153,7 +153,7 @@ class widget:
         global weekdayz
 
         #Calculate index to pop from modguestdata
-        popindex = pageref * rowstodisplay + self.rowID
+        popindex = (pageref - 1) * rowstodisplay + self.rowID
         #Store in variable to return data for potential future usecases
         deletedelem = modguestdata.pop(popindex)
         #If not user-created, also delete from guestdata
@@ -161,10 +161,10 @@ class widget:
             guestdata.pop(popindex)
 
         #If deleting this row would cause the page to be empty, delete last page
-        if int(maxpageStr.get().split(' / ')[-1]) - 1 > (len(modguestdata) - 1) // rowstodisplay:
+        if int(maxpageStr.get().split(' / ')[-1]) > (len(modguestdata) - 1) // rowstodisplay + 1:
             maxpageStr.set(" / " + str((len(modguestdata) - 1) // rowstodisplay + 1))
             #If user is on last page, go back one page
-            if pageref > (len(modguestdata) - 1) // rowstodisplay:
+            if pageref > (len(modguestdata) - 1) // rowstodisplay + 1:
                 pageref -= 1
 
         #Refresh UI
@@ -175,10 +175,10 @@ class widget:
     def setToDefault(self, newStyle="Edited"):
         if len(self.defvals) > 0:
             self.var.set(self.defvals[0])
-        elif self['values'] != weekdayz:
+        elif self.getType() != "Combobox":
             self.var.set("0")
         else:
-            self.var.set("Friday")
+            self.var.set(self.defvals[0])
         self.setStyle(newStyle)
         return self.var.get()
 
@@ -275,7 +275,7 @@ class LimitedEntryWidget(widget):
         global pageref
         global dynamic_UIelems
 
-        pageref = int(self.getVarVal()) - 1
+        pageref = int(self.getVarVal())
         flipPages(self.mainFrameref, int(self.getVarVal()) - 1, self.getWidget())
 
     def validate(self, value):
@@ -356,37 +356,40 @@ def flipPages(mainFrame, pageindex, instigator):
     global guestdata
     global weekdayz
 
-    if pageindex < 0 or pageindex > len(modguestdata) // rowstodisplay:
+    if pageindex < 1 or pageindex > (len(modguestdata) - 1) // rowstodisplay + 1:
         return False
 
     #If called by pressing buttons, update value held by entry widget
     if instigator is None:
         for widgetelem in defaultBtns:
             if isinstance(widgetelem, LimitedEntryWidget):
-                widgetelem.setVarVal(str(pageindex + 1))
+                widgetelem.setVarVal(str(pageindex))
         pageref = pageindex
 
 
-    upper = (pageindex + 1) * rowstodisplay + 1
+    upper = (pageindex) * rowstodisplay + 1
     if upper > len(modguestdata):
         upper = len(modguestdata)
-    rangeref = range(pageindex * rowstodisplay, upper)
+    rangeref = range((pageindex - 1) * rowstodisplay, upper)
 
     for guestindex in rangeref:
-        for widgetref in getallwidgetsinrow(guestindex - pageindex * rowstodisplay):
+        for widgetref in getallwidgetsinrow(guestindex - (pageindex - 1) * rowstodisplay):
             if int(widgetref.getParamID()) < 0 and widgetref.getType() == "Label":
                 widgetref.setVarVal(f'#{guestindex + 1}')
+                widgetref.show()
                 continue
 
             widgetref.setVarVal(modguestdata[guestindex][widgetref.getParamID()])
             #Check if value is part of original guestdata
             if len(guestdata) <= guestindex:
                 widgetref.setStyle("Edited")
+                widgetref.show()
                 continue
 
             #Check for discrepancy between actual and declared amount of labels
             if len(guestdata[guestindex]) <= widgetref.getParamID():
                 widgetref.setStyle("Edited")
+                widgetref.show()
                 continue
 
             #Finally check if value has been modified from original
@@ -397,7 +400,7 @@ def flipPages(mainFrame, pageindex, instigator):
                 
             widgetref.show()
 
-    if (pageindex + 1) * rowstodisplay <= len(modguestdata):
+    if (pageindex) * rowstodisplay <= len(modguestdata):
         return True
 
     for i in range(len(modguestdata) % rowstodisplay, rowstodisplay):
@@ -418,17 +421,17 @@ def addPageSwitches(mainFrame):
     global modguestdata
     global maxcolumns
 
-    maxpageStr.set(" / " + str(len(modguestdata) // rowstodisplay + 1))
+    maxpageStr.set(" / " + str((len(modguestdata) - 1) // rowstodisplay + 1))
     #TODO: Update upper index if more pages are added
     print(mainFrame.grid_size())
     if not any(isinstance(elem, LimitedEntryWidget) for elem in defaultBtns):
         defaultBtns.append(ttk.Label(mainFrame, text="Page: ", style="Plain.TLabel").grid(row=1, column=maxcolumns // 2, sticky=tk.NE))
         defaultBtns.append(ttk.Label(mainFrame, textvariable=maxpageStr, style="Plain.TLabel").grid(row=1, column=maxcolumns // 2 + 2, sticky=tk.NW))
-        defaultBtns.append(LimitedEntryWidget(mainFrame, "Entry", 1, maxcolumns // 2 + 1, pageref + 1, -1, -1, stylename="Plain", minrange=1, maxrange=pageref + 1, staticstyle=True, bindto="pageswitcher"))
+        defaultBtns.append(LimitedEntryWidget(mainFrame, "Entry", 1, maxcolumns // 2 + 1, pageref, -1, -1, stylename="Plain", minrange=1, maxrange=pageref + 1, staticstyle=True, bindto="pageswitcher"))
         defaultBtns.append(ttk.Button(mainFrame, text="<", style="Plain.TLabel", command=lambda: flipPages(mainFrame, pageref - 1, None)).grid(row=2, column=maxcolumns // 2 + 1, sticky=tk.NW))
         defaultBtns.append(ttk.Button(mainFrame, text=">", style="Plain.TLabel", command=lambda: flipPages(mainFrame, pageref + 1, None)).grid(row=2, column=maxcolumns // 2 + 2, sticky=tk.NW))
     else:
-        getwidgetbyrowID(-1, defaultBtns).setVarVal(str(pageref + 1))
+        getwidgetbyrowID(-1, defaultBtns).setVarVal(str(pageref))
 
 def getwidgetindex(listr, val):
     for i in listr:
@@ -441,6 +444,9 @@ def guestrowaddr(*args):
     global labelz
     global pageref
     global maxpageStr
+
+    if pageref < int(maxpageStr.get().split(" / ")[1]):
+        flipPages(mainFrame, int(maxpageStr.get().split(" / ")[1]), None)
 
     for widgetelemindex in range(0, len(dynamic_UIelems), len(labelz)):
         if not dynamic_UIelems[widgetelemindex].getisHidden():
@@ -467,21 +473,17 @@ def guestrowaddr(*args):
             singlewidget.setVarVal(f'#{len(modguestdata) + 1}')
     modguestdata.append(tempmodguestentry)
 
-    maxpageStr.set(" / " + str(len(modguestdata) // rowstodisplay + 1))
+    maxpageStr.set(" / " + str((len(modguestdata) - 1) // rowstodisplay + 1))
     flipPages(mainFrame, pageref + 1, None)
     return True
-    print("Go fuck yourself")
 
 
 def spawnPlusButton(mainFrame, lastrow=True):
     global dynamic_buttons
 
-    #TODO: I think I'm done for the day, continue tomorrow. Coming along nicely, the end is in sight
     if lastrow:
         dynamic_buttons.append(widget(mainFrame, "Button", mainFrame.grid_size()[1] + 2, 0, "+", -2, -2, True, stylename="Plain", staticstyle=True, commander=guestrowaddr))
-        #dynamic_buttons.append(ttk.Button())
-    
-    #Tactical error to get attention    
+ 
     return True
 
 defaultBtns = []
@@ -504,8 +506,6 @@ fileref:str = ""
 """Stores the file path of the .csv file currently being operated on"""
 dynamic_buttons = []
 """Non-entry widgets, such as buttons"""
-#TODO: Store rowstodisplay and maxcolumns in Labels.txt file
-#Use labels as reference for what widgets to create
 labelz = []
 """A list of lists that rn contains values for [rawname, sanitisedname, values, type] pulled from Labels.txt"""
 legal_types = set(["check", "contint", "catint", "date", "dropdown"])
@@ -541,9 +541,6 @@ def spawnbutton(mainFrame:tk.Frame, type:str, i_ndexr:int, indexer:int, rowref:i
 
     return widgeter
 
-
-#TODO: I done fucked up. Rewrite the whole dynamic UI elems and vars into a class LIKE IT SHOULD HAVE BEEN IN THE FIRST PLACE
-#DONE!
 def dynamicfields(mainFrame, indexr, makeempty=False):
     """Creates dynamic fields for guest entries. Loops as many times as there are labels in the Labels.txt file and outputs a single editable guest entry"""
     global dynamic_vars
@@ -558,7 +555,7 @@ def dynamicfields(mainFrame, indexr, makeempty=False):
     rowref = 0
     thisdata = []
     """List of values for current guest entry"""
-
+    
     # two additional passes for ID reference and the delete button
     rowref = mainFrame.grid_size()[1] + 1
     dynamic_UIelems.append(widget(mainFrame, "Label", rowref, 0, f"#{indexr + 1}", len(dynamic_UIelems) // len(labelz), -3, False,
@@ -580,8 +577,6 @@ def dynamicfields(mainFrame, indexr, makeempty=False):
     ttk.Separator(mainFrame, orient="horizontal").grid(row=lastrow + 1, column=0, ipadx=1000, columnspan=20)
     return thisdata
 
-#TODO: Check for all kinds of errors as human idiocy knows no limits
-#Which is funny, given that I am human too
 def sanitise(lineval):
     rawname = ""
     typer = lineval.split(' ')[-1].lower().strip()
@@ -690,12 +685,11 @@ def makenewfile(*args):
     doner.set("Awaiting input. . .")
     filenamer = newfile
     modguestdata.append(dynamicfields(mainFrame, len(guestdata), True))
-    #Not sure if the math checks out, fucking neighbours screaming above me and I can't hear myself think - I think it does
     for i in range(1, rowstodisplay):
         dynamicfields(mainFrame, i, True)
         for hider in dynamic_UIelems[-len(labelz):]:
             hider.hide()
-    pageref = len(modguestdata) // rowstodisplay
+    pageref = (len(modguestdata) - 1) // rowstodisplay + 1
     addPageSwitches(mainFrame)
     spawnPlusButton(mainFrame)
 
@@ -767,7 +761,7 @@ def getfile(*args):
         #TODO: Allow auto-fill of missing values based on new ones
         if len(templabels.split(',')) > len(lines[0].split(',')):
             warnlabel.set("Warning! Higher amount of labels in the Labels.txt file than the amount of labels in the ReviewData file!\n" +
-            "You will need to manually re-enter the values for previous entries.")
+            "You will need to manually re-enter the values for previous entries. These new values have been set to 0")
         elif len(templabels.split(',')) < len(lines[0].split(',')):
             warnlabel.set("Warning! Higher amount of labels in the ReviewData file than the amount of labels in the Labels.txt file!\n" +
             "Omitting the extra labels. Please remove extra labels from the ReviewData file or add them to the Labels.txt file.")
@@ -793,22 +787,16 @@ def getfile(*args):
             guestdata.append(templist)
             modguestdata.append(uberlist)
         appendlabelz()
-        #Calculate the widgets for last page
-        #Fuck.
-        #The way widgets are created. It creates 20 of the fuckers and then when switching pages
-        #FUCK
-        #Can I just hide them - YES!
-        lastpagefirstindex = ((len(guestdata) + 1) // rowstodisplay) * rowstodisplay
+
+        lastpagefirstindex = ((len(guestdata)) // rowstodisplay) * rowstodisplay
         for i in range(lastpagefirstindex, len(guestdata)):
-            #dynamic_UIelems.append(widget(mainFrame, guestdata.index(guestdata[i])))
             dynamicfields(mainFrame, guestdata.index(guestdata[i]))
         modguestdata.append(dynamicfields(mainFrame, len(guestdata), True))
-        #Not sure if the math checks out, fucking neighbours screaming above me and I can't hear myself think - I think it does
         for i in range(len(modguestdata) - lastpagefirstindex, rowstodisplay):
             dynamicfields(mainFrame, i, True)
             for hider in dynamic_UIelems[-len(labelz):]:
                 hider.hide()
-        pageref = len(modguestdata) // rowstodisplay
+        pageref = (len(modguestdata) - 1) // rowstodisplay + 1
         preloadname.set(filenamer)
         doner.set("Awaiting input. . .")
 
@@ -872,12 +860,10 @@ maxpageStr = tk.StringVar()
 toAffectbyStyles = ["TCheckbutton", "TCombobox", "TEntry", "TLabel", "TLabelFrame", "TButton"]
 UntouchedStylez:ttk.Style = []
 """Contains unedited styles for (in order): CheckButton, ComboBox, Entry, Label, LabelFrame, Button"""
-#UntouchedStylez.configure("Untouched", background="#7DFFBB", foreground="#7DFFBB")
 EditedStylez:ttk.Style = []
 """Contains edited styles for (in order): CheckButton, ComboBox, Entry, Label, LabelFrame, Button"""
 PlainStylez:ttk.Style = []
 """Contains plain styles for (in order): CheckButton, ComboBox, Entry, Label, LabelFrame, Button"""
-#EditedStylez.configure("Edited", background="#7D80FF", foreground="#7D80FF")
 temper = ttk.Style()
 temper.element_create("plain.field", "from", "default")
 
@@ -924,8 +910,6 @@ UntouchedStylez, EditedStylez, PlainStylez = initstyles(toAffectbyStyles, Untouc
 
 MainWindow.columnconfigure(0, weight=1)
 MainWindow.rowconfigure(0, weight=1)
-
-#TXDX: Refactor all the buttons - DONE!
 
 defaultBtns.append(ttk.Button(mainFrame, text="Make new file", command=makenewfile, style="Plain.TButton"))
 defaultBtns[-1].grid(column=0, row=0, sticky=(tk.SW))
