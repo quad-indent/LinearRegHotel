@@ -20,6 +20,7 @@ This is one of my first projects in Python and my first GitHub repository, so I 
 
 ## Acknowledgements
 
+ - [Andrew Ng's excellent series of courses covering machine learning](https://www.coursera.org/instructor/andrewng)
  - [CodeCademy and its course on machine learning](https://www.codecademy.com/)
  - [StatQuest](https://www.youtube.com/@statquest)
  - [Github Copilot](https://github.com/features/copilot)
