@@ -3,7 +3,7 @@
 
 Originally started developing it to predict guest ratings at a hotel, decided to add modularity to it to expand the scope of what data it can deal with.
 
-Currently it includes the main module that uses linear regression, and two modules that allow for manipulation of training data and another that allows the user to specify parameters for prediction based upon the former.
+Currently it includes the main module that uses a neural network, and two modules that allow for manipulation of training data and another that allows the user to specify parameters for prediction based upon the former.
 Both come with a simple GUI.
 ## Features
 
@@ -34,15 +34,11 @@ Shoot me an e-mail at throwieaway1142@gmail.com with any feedback or questions, 
 
 ## Roadmap
 
-- Implement discrete variables and one-hot encoding 
-
 - Allow unicode input
 
 - Allow user to switch the model they use for predictions and training
 
 - Allow further data manipulation
-
-- Optimise memory usage for bigger datasets
 
 
 ## Download executable
