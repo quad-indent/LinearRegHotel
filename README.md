@@ -44,4 +44,4 @@ Shoot me an e-mail at throwieaway1142@gmail.com with any feedback or questions, 
 
 ## Download executable
 
-[You can download the executables here](https://github.com/Jan-bog/HotelProphet/releases/)
+[You can download the executables here](https://github.com/quad-indent/LinearRegHotel/releases/)
