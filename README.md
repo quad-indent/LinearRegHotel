@@ -1,5 +1,5 @@
 
-# Hotel Prophet
+# LinearRegHotel
 
 Originally started developing it to predict guest ratings at a hotel, decided to add modularity to it to expand the scope of what data it can deal with.
 
@@ -26,13 +26,6 @@ This is one of my first projects in Python and my first GitHub repository, so I 
  - [Github Copilot](https://github.com/features/copilot)
 
 
-
-## Feedback and support
-
-Shoot me an e-mail at throwieaway1142@gmail.com with any feedback or questions, thanks in advance! (despite the name, I do use this e-mail address)
-
-
-
 ## Roadmap
 
 - Allow unicode input
@@ -44,4 +37,4 @@ Shoot me an e-mail at throwieaway1142@gmail.com with any feedback or questions, 
 
 ## Download executable
 
-[You can download the executables here](https://github.com/Jan-bog/HotelProphet/releases/)
+[You can download the executables here](https://github.com/quad-indent/LinearRegHotel/releases/)
